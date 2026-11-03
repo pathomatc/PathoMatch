@@ -14,10 +14,15 @@ Entrez.email = "pathomatch.dev@gmail.com"
 st.markdown("""
     <style>
         div[data-testid="InputInstructions"] { display: none !important; }
+        
+        /* บังคับเปลี่ยนสีขอบช่องกรอกข้อมูลตอนกำลังพิมพ์ให้เป็นสีฟ้า */
+        div[data-testid="stTextInput"] div[data-baseweb="base-input"]:focus-within,
         div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within {
             border-color: #3498db !important;
             box-shadow: 0 0 0 1px #3498db !important;
+            outline: none !important;
         }
+        
         div[data-testid="stStatusWidget"] { display: none !important; }
     </style>
 """, unsafe_allow_html=True)
