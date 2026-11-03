@@ -310,7 +310,7 @@ else:
     }
 
     with st.form(key='search_form'):
-        search_query = st.text_input("🔍 Search microorganism name or abbreviation (e.g., F. oxysporum, B. subtilis):", value=st.session_state.active_query, key="input_query")
+        search_query = st.text_input("🔍 Search microorganism name", value=st.session_state.active_query, key="input_query")
         submit_button = st.form_submit_button(label="Search Data")
 
     clicked_history = None
