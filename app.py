@@ -25,7 +25,6 @@ st.markdown("""
 if 'search_history' not in st.session_state: st.session_state.search_history = []
 if 'active_query' not in st.session_state: st.session_state.active_query = ""
 if 'user_name' not in st.session_state: st.session_state.user_name = "Researcher"
-if 'user_email' not in st.session_state: st.session_state.user_email = "researcher@lab.com"
 if 'user_avatar' not in st.session_state: st.session_state.user_avatar = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
 
 # --- Session State สำหรับคำนวณ Volume อัตโนมัติ ---
@@ -39,27 +38,41 @@ def calc_target_vol():
 # --- SIDEBAR (Navigation & Profile) ---
 with st.sidebar:
     profile_container = st.container()
-    with st.expander("Edit Profile"):
+    with st.expander("⚙️ Edit Profile"):
         new_name = st.text_input("Display Name", value=st.session_state.user_name)
-        avatar_choice = st.selectbox("Choose Avatar", ["Lab Microscope", "DNA Strand", "Coder Profile", "Botanist"])
+        
+        avatar_mode = st.radio("Avatar Source", ["Choose Preset", "Upload Custom Image"])
+        
+        custom_avatar_url = st.session_state.user_avatar
+        if avatar_mode == "Choose Preset":
+            avatar_choice = st.selectbox("Choose Avatar", ["🔬 Lab Microscope", "🧬 DNA Strand", "🌿 Botanist"])
+            if avatar_choice == "🔬 Lab Microscope": custom_avatar_url = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+            elif avatar_choice == "🧬 DNA Strand": custom_avatar_url = "https://cdn-icons-png.flaticon.com/512/2026/2026414.png"
+            else: custom_avatar_url = "https://cdn-icons-png.flaticon.com/512/2913/2913990.png"
+        else:
+            uploaded_file = st.file_uploader("Upload Image (PNG, JPG)", type=["png", "jpg", "jpeg"])
+            if uploaded_file is not None:
+                # แปลงไฟล์อัปโหลดเป็น Base64 หรือใช้สตรีมเพื่อเก็บใน session state
+                import base64
+                bytes_data = uploaded_file.getvalue()
+                encoded = base64.b64encode(bytes_data).decode()
+                custom_avatar_url = f"data:image/png;base64,{encoded}"
+
         if st.button("Update Profile"):
             st.session_state.user_name = new_name
-            if avatar_choice == "Lab Microscope": st.session_state.user_avatar = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-            elif avatar_choice == "DNA Strand": st.session_state.user_avatar = "https://cdn-icons-png.flaticon.com/512/2026/2026414.png"
-            elif avatar_choice == "Coder Profile": st.session_state.user_avatar = "https://cdn-icons-png.flaticon.com/512/3135/3135768.png"
-            else: st.session_state.user_avatar = "https://cdn-icons-png.flaticon.com/512/2913/2913990.png"
+            st.session_state.user_avatar = custom_avatar_url
             st.rerun()
 
     with profile_container:
         st.image(st.session_state.user_avatar, width=90)
         st.markdown(f"### **{st.session_state.user_name}**")
-      
+
     st.divider()
     app_mode = st.radio("**Select Workspace:**", ["Bio-Mining Database", "Lab Calculators & Protocols"])
     
     st.divider()
     st.markdown("**PathoMatch System**")
-    st.caption("v6.5 (Cleaned Workspace)")
+    st.caption("v6.4 (Custom Avatar & Clean UI)")
     st.write("© 2026 PathoMatch Project")
 
 # ==========================================
@@ -138,7 +151,7 @@ PROTOCOL_GRAM_POS = """
 # ==========================================
 if app_mode == "Lab Calculators & Protocols":
     st.title("Lab Calculators & Protocols")
-    st.markdown("Freely create, edit, and scale media preparation recipes and extraction buffers")
+    st.markdown("Freely create, edit, and scale media preparation recipes and extraction buffers.")
     st.divider()
     
     st.markdown("#### Universal Recipe & Media Builder")
@@ -189,7 +202,7 @@ if app_mode == "Lab Calculators & Protocols":
     with vcol2:
         target_volume = st.number_input("Desired Target Volume (ml):", min_value=1, key="target_vol")
         
-    with st.expander("Calculate Target Volume from Plates"):
+    with st.expander("Optional: Calculate Target Volume from Plates"):
         st.caption("Changes here will instantly update the 'Desired Target Volume' above.")
         p_col1, p_col2 = st.columns(2)
         with p_col1:
@@ -228,8 +241,8 @@ if app_mode == "Lab Calculators & Protocols":
 # MODE 1: โหมดค้นหาฐานข้อมูล (Bio-Mining Database)
 # ==========================================
 else:
-    st.title("PathoMatch Database")
-    st.markdown("Pathogen & Genomic Data Explorer")
+    st.title("🔬 PathoMatch Database")
+    st.markdown("Automated pathogen, biocontrol, and genomic retrieval system")
     st.divider()
 
     GENUS_SUGGESTIONS = {
@@ -305,12 +318,12 @@ else:
     }
 
     with st.form(key='search_form'):
-        search_query = st.text_input("Search microorganism name", value=st.session_state.active_query, key="input_query")
+        search_query = st.text_input("🔍 Search microorganism name or abbreviation (e.g., F. oxysporum, B. subtilis):", value=st.session_state.active_query, key="input_query")
         submit_button = st.form_submit_button(label="Search Data")
 
     clicked_history = None
     if st.session_state.search_history:
-        st.write("**Recent Searches:**")
+        st.write("🕒 **Recent Searches:**")
         cols = st.columns(5) 
         for idx, past_query in enumerate(st.session_state.search_history):
             if cols[idx].button(past_query, key=f"hist_{idx}"): clicked_history = past_query
@@ -336,7 +349,7 @@ else:
             if species_part in EPITHET_SUGGESTIONS:
                 valid_combos = [s.lower() for s in EPITHET_SUGGESTIONS[species_part]]
                 if target_lower not in valid_combos:
-                    st.error(f"**Typo Detected!** '{genus_part.capitalize()}' is unusual for '{species_part}'. Did you mean:")
+                    st.error(f"🚨 **Typo Detected!** '{genus_part.capitalize()}' is unusual for '{species_part}'. Did you mean:")
                     sug_cols = st.columns(len(EPITHET_SUGGESTIONS[species_part]))
                     for i, sug_sp in enumerate(EPITHET_SUGGESTIONS[species_part]):
                         if sug_cols[i].button(sug_sp, key=f"sug_typo_{i}"):
@@ -346,7 +359,7 @@ else:
                     is_typo_caught = True
             
             if not is_typo_caught and genus_part in GENUS_SUGGESTIONS and target_lower == genus_part:
-                st.info(f"**Are you looking for a specific '{genus_part.capitalize()}' species?**")
+                st.info(f"💡 **Are you looking for a specific '{genus_part.capitalize()}' species?**")
                 sug_cols = st.columns(len(GENUS_SUGGESTIONS[genus_part]))
                 for i, sug_sp in enumerate(GENUS_SUGGESTIONS[genus_part]):
                     if sug_cols[i].button(sug_sp, key=f"sug_gen_{i}"):
@@ -456,9 +469,9 @@ else:
                         if len(sentence) < 20: continue
                         
                         for bc in common_biocontrols:
-                            if bc in lower_s and bc not in target_lower: detected_biocontrols.add(f"{bc.capitalize()}")
+                            if bc in lower_s and bc not in target_lower: detected_biocontrols.add(f"🛡️ {bc.capitalize()}")
                         for p in common_pathogens:
-                            if p in lower_s and p not in target_lower: detected_pathogens.add(f"{p.capitalize()}")
+                            if p in lower_s and p not in target_lower: detected_pathogens.add(f"🦠 {p.capitalize()}")
 
                         if any(kw in lower_s for kw in extract_kw):
                             if sentence not in extract_info: extract_info.append(sentence)
@@ -491,9 +504,9 @@ else:
                 for key, relations in KNOWLEDGE_BASE.items():
                     if key in target_lower:
                         if "biocontrols" in relations:
-                            for bc in relations["biocontrols"]: detected_biocontrols.add(f"{bc}")
+                            for bc in relations["biocontrols"]: detected_biocontrols.add(f"🛡️ {bc}")
                         if "pathogens" in relations:
-                            for p in relations["pathogens"]: detected_pathogens.add(f"{p}")
+                            for p in relations["pathogens"]: detected_pathogens.add(f"🦠 {p}")
                         if "bsl" in relations:
                             bsl_status = relations["bsl"]
                         if "prevention" in relations:
@@ -517,23 +530,23 @@ else:
                 head_col1, head_col2, head_col3 = st.columns([2, 5, 2])
                 with head_col1:
                     if wiki_image_url: st.image(wiki_image_url, caption=target_query, use_container_width=True)
-                    else: st.info("No image available")
+                    else: st.info("🖼️ No image available")
                 with head_col2:
-                    st.markdown(f"## **{target_query}**")
+                    st.markdown(f"## 🦠 **{target_query}**")
                     st.write(f"**NCBI Taxonomy ID:** {ncbi_id} | **Biosafety Level:** {bsl_status}")
                 with head_col3:
-                    st.download_button(label="Download Report", data=report_text, file_name=f"{target_query.replace(' ', '_')}_report.txt", mime="text/plain")
+                    st.download_button(label="📥 Download Report", data=report_text, file_name=f"{target_query.replace(' ', '_')}_report.txt", mime="text/plain")
                 
-                st.write(f"**Lineage:** {lineage}")
+                st.write(f"**🧬 Lineage:** {lineage}")
                     
                 st.divider()
                 
                 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-                    "Overview & Disease", 
-                    "Culture & Extraction", 
-                    "Host, Plants & Toxins", 
-                    "Sequences & Relatives",
-                    "Literature"
+                    "📊 Overview & Disease", 
+                    "🧫 Culture & Extraction", 
+                    "🌾 Host, Plants & Toxins", 
+                    "🧬 Sequences & Relatives",
+                    "📚 Literature"
                 ])
                 
                 with tab1:
@@ -541,48 +554,48 @@ else:
                     with col_t1:
                         st.info("**General Biological Information:**\n\n" + "\n\n".join(general_info[:5] if general_info else ["No general information found."]))
                     with col_t2:
-                        st.warning("**Disease & Pathogenicity Overview:**\n\n" + "\n\n".join(disease_info[:5] if disease_info else ["No direct pathogenicity information found."]))
+                        st.warning("⚠️ **Disease & Pathogenicity Overview:**\n\n" + "\n\n".join(disease_info[:5] if disease_info else ["No direct pathogenicity information found."]))
                 
                 with tab2:
-                    st.markdown("#### Culture & Growth Conditions:")
+                    st.markdown("#### 🧫 Culture & Growth Conditions:")
                     if culture_info:
-                        with st.expander("Growth Media & Incubation Protocol", expanded=False):
+                        with st.expander("📌 Growth Media & Incubation Protocol", expanded=False):
                             st.write("\n\n".join(culture_info[:5]))
                     else:
                         st.write("No specific cultivation data found.")
                         
-                    st.markdown("#### DNA Extraction Protocols")
+                    st.markdown("#### 🧬 DNA Extraction Protocols")
                     org_type = get_organism_type(target_query)
                     st.write(f"**Organism Classification:** {org_type}")
                     
                     if extract_info:
-                        st.success("**Methods from Recent Literature:**\n\n" + "\n\n".join(extract_info[:3]))
+                        st.success("🔬 **Methods from Recent Literature:**\n\n" + "\n\n".join(extract_info[:3]))
                         
                     if org_type == "Fungi / Oomycete":
-                        with st.expander("Target Protocol: Fungal CTAB Method", expanded=True):
+                        with st.expander("📍 Target Protocol: Fungal CTAB Method", expanded=True):
                             st.markdown(PROTOCOL_FUNGI)
                     elif org_type == "Gram-Positive Bacteria":
-                        with st.expander("Target Protocol: Gram-Positive Bacteria (Enzymatic Lysis)", expanded=True):
+                        with st.expander("📍 Target Protocol: Gram-Positive Bacteria (Enzymatic Lysis)", expanded=True):
                             st.markdown(PROTOCOL_GRAM_POS)
                     elif org_type == "Gram-Negative Bacteria":
-                        with st.expander("Target Protocol: Gram-Negative Bacteria (Boiling Method)", expanded=True):
+                        with st.expander("📍 Target Protocol: Gram-Negative Bacteria (Boiling Method)", expanded=True):
                             st.markdown(PROTOCOL_GRAM_NEG)
                     else:
                         st.info("Protocol cannot be determined automatically. Please check the 'Lab Calculators' mode for full baseline protocols.")
                     
-                    st.markdown("#### Control & Prevention Strategies:")
+                    st.markdown("#### 🛡️ Control & Prevention Strategies:")
                     if prev_info:
-                        with st.expander("Prevention & Management Practices", expanded=False):
+                        with st.expander("🚧 Prevention & Management Practices", expanded=False):
                             st.write("\n\n".join(prev_info[:5]))
                     
                     if control_info:
-                        with st.expander("Biocontrol & Chemical Interventions", expanded=False):
+                        with st.expander("📌 Biocontrol & Chemical Interventions", expanded=False):
                             st.write("\n\n".join(control_info[:5]))
                         
                     all_related_organisms = list(detected_biocontrols) + list(detected_pathogens)
                     if all_related_organisms:
                         st.divider()
-                        st.markdown("**Related Organisms :**")
+                        st.markdown("💡 **Related Organisms :**")
                         bc_cols = st.columns(len(all_related_organisms) + 2) 
                         for idx, org_name in enumerate(all_related_organisms):
                             if bc_cols[idx].button(org_name, key=f"org_btn_{idx}"):
@@ -593,48 +606,48 @@ else:
                 with tab3:
                     col_t3, col_t4 = st.columns(2)
                     with col_t3:
-                        st.success("**Host Range & Distribution:**\n\n" + "\n\n".join(host_info[:4] if host_info else ["No specific host range data found."]))
+                        st.success("🌾 **Host Range & Distribution:**\n\n" + "\n\n".join(host_info[:4] if host_info else ["No specific host range data found."]))
                         
                         if plant_impact_info:
-                            st.warning("**Plant Pathogenicity & Impact:**\n\n" + "\n\n".join(plant_impact_info[:3]))
+                            st.warning("🍂 **Plant Pathogenicity & Impact:**\n\n" + "\n\n".join(plant_impact_info[:3]))
                         else:
-                            st.info("**Plant Pathogenicity & Impact:**\n\nNo major plant pathogenicity indicators found.")
+                            st.info("🍂 **Plant Pathogenicity & Impact:**\n\nNo major plant pathogenicity indicators found.")
 
                     with col_t4:
                         if human_risk_info:
-                            st.error("**Human & Animal Toxicity Risk:**\n\n" + "\n\n".join(human_risk_info[:3]))
+                            st.error("☠️ **Human & Animal Toxicity Risk:**\n\n" + "\n\n".join(human_risk_info[:3]))
                         else:
-                            st.info("**Human & Animal Toxicity Risk:**\n\nNo significant direct toxicity to humans or animals reported in the retrieved data.")
+                            st.info("✅ **Human & Animal Toxicity Risk:**\n\nNo significant direct toxicity to humans or animals reported in the retrieved data.")
                         
-                        st.warning("**Other Toxins & Secondary Metabolites:**\n\n" + "\n\n".join(toxin_info[:3] if toxin_info else ["No general metabolite information found."]))
+                        st.warning("🧪 **Other Toxins & Secondary Metabolites:**\n\n" + "\n\n".join(toxin_info[:3] if toxin_info else ["No general metabolite information found."]))
 
                 with tab4:
-                    st.markdown("#### Reference Sequence (Marker Gene)")
+                    st.markdown("#### 🧬 Reference Sequence (Marker Gene)")
                     if "Sequence data not found" not in fasta_seq:
                         blast_url = f"https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastn&PAGE_TYPE=BlastSearch&QUERY={urllib.parse.quote(fasta_seq)}"
-                        st.markdown(f"[Run Sequence in NCBI BLAST]({blast_url})", unsafe_allow_html=True)
+                        st.markdown(f"[🚀 Run Sequence in NCBI BLAST]({blast_url})", unsafe_allow_html=True)
 
                     with st.expander("Show FASTA Sequence", expanded=False):
                         st.caption("Automatically fetched from NCBI Nucleotide (ITS for Fungi / 16S for Bacteria).")
                         st.code(fasta_seq, language="fasta")
                     
                     st.divider()
-                    st.markdown("#### Closely Related Species")
+                    st.markdown("#### 🌳 Closely Related Species (Same Genus)")
                     if related_species:
                         st.write("These species share the same evolutionary lineage and may exhibit similar pathogenicity or characteristics:")
                         for sp in related_species:
-                            if st.button(f"{sp}", key=f"rel_{sp}", type="tertiary"):
+                            if st.button(f"🔗 {sp}", key=f"rel_{sp}", type="tertiary"):
                                 st.session_state.active_query = sp
                                 st.rerun()
                     else:
                         st.write("No related species data fetched.")
 
                 with tab5:
-                    st.markdown("#### Recent Scientific Literature (Europe PMC)")
+                    st.markdown("#### 📚 Recent Scientific Literature (Europe PMC)")
                     st.caption("Auto-mined from the latest publications related to this organism.")
                     if paper_citations:
                         for i, paper in enumerate(paper_citations):
                             doi_link = f"https://doi.org/{paper['doi']}" if paper['doi'] else "#"
-                            st.markdown(f"{i+1}. {paper['author']} ({paper['year']}). **{paper['title']}** [DOI]({doi_link})")
+                            st.markdown(f"{i+1}. {paper['author']} ({paper['year']}). **{paper['title']}** [🔗 DOI]({doi_link})")
                     else:
                         st.write("No literature citations retrieved for this query.")
