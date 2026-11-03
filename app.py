@@ -41,11 +41,9 @@ with st.sidebar:
     profile_container = st.container()
     with st.expander("Edit Profile"):
         new_name = st.text_input("Display Name", value=st.session_state.user_name)
-        new_email = st.text_input("Email", value=st.session_state.user_email)
         avatar_choice = st.selectbox("Choose Avatar", ["Lab Microscope", "DNA Strand", "Coder Profile", "Botanist"])
         if st.button("Update Profile"):
             st.session_state.user_name = new_name
-            st.session_state.user_email = new_email
             if avatar_choice == "Lab Microscope": st.session_state.user_avatar = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
             elif avatar_choice == "DNA Strand": st.session_state.user_avatar = "https://cdn-icons-png.flaticon.com/512/2026/2026414.png"
             elif avatar_choice == "Coder Profile": st.session_state.user_avatar = "https://cdn-icons-png.flaticon.com/512/3135/3135768.png"
@@ -55,8 +53,7 @@ with st.sidebar:
     with profile_container:
         st.image(st.session_state.user_avatar, width=90)
         st.markdown(f"### **{st.session_state.user_name}**")
-        st.caption(f"{st.session_state.user_email}")
-
+      
     st.divider()
     app_mode = st.radio("**Select Workspace:**", ["Bio-Mining Database", "Lab Calculators & Protocols"])
     
@@ -308,7 +305,7 @@ else:
     }
 
     with st.form(key='search_form'):
-        search_query = st.text_input("Search microorganism name  (e.g., Fusarium pseudograminearum or Bacillus subtilis):", value=st.session_state.active_query, key="input_query")
+        search_query = st.text_input("Search microorganism name", value=st.session_state.active_query, key="input_query")
         submit_button = st.form_submit_button(label="Search Data")
 
     clicked_history = None
