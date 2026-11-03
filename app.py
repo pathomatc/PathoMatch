@@ -14,14 +14,13 @@ Entrez.email = "pathomatch.dev@gmail.com"
 st.markdown("""
     <style>
         div[data-testid="InputInstructions"] { display: none !important; }
-        div[data-baseweb="input"]:focus-within {
+        div[data-testid="stTextInput"] div[data-baseweb="input"]:focus-within {
             border-color: #3498db !important;
             box-shadow: 0 0 0 1px #3498db !important;
         }
         div[data-testid="stStatusWidget"] { display: none !important; }
     </style>
 """, unsafe_allow_html=True)
-
 # --- 1. ระบบจัดการ Session State ---
 if 'search_history' not in st.session_state: st.session_state.search_history = []
 if 'active_query' not in st.session_state: st.session_state.active_query = ""
