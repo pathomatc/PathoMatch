@@ -628,7 +628,7 @@ else:
                         st.code(fasta_seq, language="fasta")
                     
                     st.divider()
-                    st.markdown("#### 🌳 Closely Related Species (Same Genus)")
+                    st.markdown("#### 🌳 Closely Related Species ")
                     if related_species:
                         st.write("These species share the same evolutionary lineage and may exhibit similar pathogenicity or characteristics:")
                         for sp in related_species:
