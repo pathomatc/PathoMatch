@@ -5,6 +5,7 @@ import json
 import re
 import pandas as pd
 from Bio import Entrez, SeqIO
+import base64
 
 st.set_page_config(page_title="PathoMatch", page_icon="🔬", layout="wide", initial_sidebar_state="expanded")
 Entrez.email = "pathomatch.dev@gmail.com"
@@ -25,7 +26,8 @@ st.markdown("""
 if 'search_history' not in st.session_state: st.session_state.search_history = []
 if 'active_query' not in st.session_state: st.session_state.active_query = ""
 if 'user_name' not in st.session_state: st.session_state.user_name = "Researcher"
-if 'user_avatar' not in st.session_state: st.session_state.user_avatar = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+# ใช้รูปเงาคน (Default Profile Silhouette) เป็นค่าเริ่มต้น
+if 'user_avatar' not in st.session_state: st.session_state.user_avatar = "https://cdn-icons-png.flaticon.com/512/847/847969.png"
 
 # --- Session State สำหรับคำนวณ Volume อัตโนมัติ ---
 if 'target_vol' not in st.session_state: st.session_state.target_vol = 500
@@ -41,22 +43,12 @@ with st.sidebar:
     with st.expander("⚙️ Edit Profile"):
         new_name = st.text_input("Display Name", value=st.session_state.user_name)
         
-        avatar_mode = st.radio("Avatar Source", ["Choose Preset", "Upload Custom Image"])
-        
         custom_avatar_url = st.session_state.user_avatar
-        if avatar_mode == "Choose Preset":
-            avatar_choice = st.selectbox("Choose Avatar", ["🔬 Lab Microscope", "🧬 DNA Strand", "🌿 Botanist"])
-            if avatar_choice == "🔬 Lab Microscope": custom_avatar_url = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-            elif avatar_choice == "🧬 DNA Strand": custom_avatar_url = "https://cdn-icons-png.flaticon.com/512/2026/2026414.png"
-            else: custom_avatar_url = "https://cdn-icons-png.flaticon.com/512/2913/2913990.png"
-        else:
-            uploaded_file = st.file_uploader("Upload Image (PNG, JPG)", type=["png", "jpg", "jpeg"])
-            if uploaded_file is not None:
-                # แปลงไฟล์อัปโหลดเป็น Base64 หรือใช้สตรีมเพื่อเก็บใน session state
-                import base64
-                bytes_data = uploaded_file.getvalue()
-                encoded = base64.b64encode(bytes_data).decode()
-                custom_avatar_url = f"data:image/png;base64,{encoded}"
+        uploaded_file = st.file_uploader("Upload Profile Picture (PNG, JPG)", type=["png", "jpg", "jpeg"])
+        if uploaded_file is not None:
+            bytes_data = uploaded_file.getvalue()
+            encoded = base64.b64encode(bytes_data).decode()
+            custom_avatar_url = f"data:image/png;base64,{encoded}"
 
         if st.button("Update Profile"):
             st.session_state.user_name = new_name
@@ -72,7 +64,7 @@ with st.sidebar:
     
     st.divider()
     st.markdown("**PathoMatch System**")
-    st.caption("v6.4 (Custom Avatar & Clean UI)")
+    st.caption("v6.5 (Custom Upload Avatar)")
     st.write("© 2026 PathoMatch Project")
 
 # ==========================================
