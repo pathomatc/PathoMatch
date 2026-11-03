@@ -64,7 +64,7 @@ with st.sidebar:
     
     st.divider()
     st.markdown("**PathoMatch System**")
-    st.caption("v6.5 (Custom Upload Avatar)")
+    st.caption("v1.0")
     st.write("© 2026 PathoMatch Project")
 
 # ==========================================
