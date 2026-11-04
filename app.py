@@ -8,9 +8,7 @@ from Bio import Entrez, SeqIO
 import base64
 
 st.set_page_config(page_title="PathoMatch", page_icon="🔬", layout="wide", initial_sidebar_state="expanded")
-
-# กำหนดอีเมลสำหรับ Entrez (เปลี่ยนเป็นอีเมลของคุณซินได้ตามต้องการ)
-Entrez.email = "your.email@example.com"
+Entrez.email = "pathomatch.dev@gmail.com"
 
 # --- โค้ด CSS ปรับแต่งหน้าตาเว็บ ---
 st.markdown("""
@@ -28,42 +26,11 @@ st.markdown("""
         div[data-testid="stStatusWidget"] { display: none !important; }
     </style>
 """, unsafe_allow_html=True)
-
-# ==========================================
-# ระบบล็อกอิน (Login System)
-# ==========================================
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
-
-if not st.session_state.logged_in:
-    # หน้าจอสำหรับล็อกอินเข้าสู่ระบบ
-    st.title("🔬 PathoMatch Login")
-    st.markdown("Please enter your credentials to access the workspace.")
-    
-    with st.form("login_form"):
-        username_input = st.text_input("Username")
-        password_input = st.text_input("Password", type="password")
-        submit_login = st.form_submit_button("Login")
-        
-        if submit_login:
-            # กำหนด Username และ Password สำหรับทดสอบ (สามารถเปลี่ยนตรงนี้ได้ตามต้องการ)
-            if username_input == "admin" and password_input == "1234":
-                st.session_state.logged_in = True
-                st.session_state.user_name = username_input
-                st.rerun()
-            else:
-                st.error("❌ Invalid Username or Password. (Try Username: admin, Password: 1234)")
-                
-    st.stop() # หยุดการทำงานด้านล่างทั้งหมดจนกว่าจะล็อกอินสำเร็จ
-
-# ==========================================
-# เมื่อล็อกอินสำเร็จแล้ว จะเข้าสู่แอปพลิเคชันหลัก
-# ==========================================
-
 # --- 1. ระบบจัดการ Session State ---
 if 'search_history' not in st.session_state: st.session_state.search_history = []
 if 'active_query' not in st.session_state: st.session_state.active_query = ""
-if 'user_name' not in st.session_state: st.session_state.user_name = "User"
+if 'user_name' not in st.session_state: st.session_state.user_name = "Researcher"
+# ใช้รูปเงาคน (Default Profile Silhouette) เป็นค่าเริ่มต้น
 if 'user_avatar' not in st.session_state: st.session_state.user_avatar = "https://cdn-icons-png.flaticon.com/512/847/847969.png"
 
 # --- Session State สำหรับคำนวณ Volume อัตโนมัติ ---
@@ -100,11 +67,6 @@ with st.sidebar:
     app_mode = st.radio("**Select Workspace:**", ["Bio-Mining Database", "Lab Calculators & Protocols"])
     
     st.divider()
-    # ปุ่มสำหรับออกจากระบบ
-    if st.button("🚪 Logout"):
-        st.session_state.logged_in = False
-        st.rerun()
-
     st.markdown("**PathoMatch System**")
     st.caption("v1.0")
     st.write("© 2026 PathoMatch Project")
@@ -521,7 +483,7 @@ else:
                         elif is_toxin:
                             if sentence not in toxin_info: toxin_info.append(sentence)
 
-                        if any(kw in lower_s for kw in plant_impact_info):
+                        if any(kw in lower_s for kw in plant_impact_kw):
                             if sentence not in plant_impact_info: plant_impact_info.append(sentence)
 
                         if any(kw in lower_s for kw in host_kw) and sentence not in host_info: host_info.append(sentence)
@@ -563,12 +525,10 @@ else:
                 
                 head_col1, head_col2, head_col3 = st.columns([2, 5, 2])
                 with head_col1:
-                    if wiki_image_url: 
-                        st.image(wiki_image_url, use_container_width=True)
-                        st.markdown(f"<p style='text-align: center; color: gray; font-size: 14px;'><i>{target_query}</i></p>", unsafe_allow_html=True)
+                    if wiki_image_url: st.image(wiki_image_url, caption=target_query, use_container_width=True)
                     else: st.info("🖼️ No image available")
                 with head_col2:
-                    st.markdown(f"## 🦠 ***{target_query}***")
+                    st.markdown(f"## 🦠 **{target_query}**")
                     st.write(f"**NCBI Taxonomy ID:** {ncbi_id} | **Biosafety Level:** {bsl_status}")
                 with head_col3:
                     st.download_button(label="📥 Download Report", data=report_text, file_name=f"{target_query.replace(' ', '_')}_report.txt", mime="text/plain")
