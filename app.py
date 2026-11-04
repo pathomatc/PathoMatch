@@ -26,6 +26,7 @@ st.markdown("""
         div[data-testid="stStatusWidget"] { display: none !important; }
     </style>
 """, unsafe_allow_html=True)
+
 # --- 1. ระบบจัดการ Session State ---
 if 'search_history' not in st.session_state: st.session_state.search_history = []
 if 'active_query' not in st.session_state: st.session_state.active_query = ""
@@ -483,7 +484,7 @@ else:
                         elif is_toxin:
                             if sentence not in toxin_info: toxin_info.append(sentence)
 
-                        if any(kw in lower_s for kw in plant_impact_kw):
+                        if any(kw in lower_s for kw in plant_impact_info):
                             if sentence not in plant_impact_info: plant_impact_info.append(sentence)
 
                         if any(kw in lower_s for kw in host_kw) and sentence not in host_info: host_info.append(sentence)
@@ -525,10 +526,12 @@ else:
                 
                 head_col1, head_col2, head_col3 = st.columns([2, 5, 2])
                 with head_col1:
-                    if wiki_image_url: st.image(wiki_image_url, caption=target_query, use_container_width=True)
+                    if wiki_image_url: 
+                        st.image(wiki_image_url, use_container_width=True)
+                        st.markdown(f"<p style='text-align: center; color: gray; font-size: 14px;'><i>{target_query}</i></p>", unsafe_allow_html=True)
                     else: st.info("🖼️ No image available")
                 with head_col2:
-                    st.markdown(f"## 🦠 **{target_query}**")
+                    st.markdown(f"## 🦠 ***{target_query}***")
                     st.write(f"**NCBI Taxonomy ID:** {ncbi_id} | **Biosafety Level:** {bsl_status}")
                 with head_col3:
                     st.download_button(label="📥 Download Report", data=report_text, file_name=f"{target_query.replace(' ', '_')}_report.txt", mime="text/plain")
